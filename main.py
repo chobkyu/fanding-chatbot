@@ -15,15 +15,20 @@ app = FastAPI()
 class Question(BaseModel):
     query: str
 
+embedding = OpenAIEmbeddings()
+vectordb = FAISS.load_local("faiss_index", embedding, allow_dangerous_deserialization=True)
+
+qa = RetrievalQA.from_chain_type(
+    llm=ChatOpenAI(model="gpt-4.1-nano", temperature=0.7),
+    retriever = vectordb.as_retriever()
+)
+
+def get_answer(query: str) -> str:
+    result = qa.run(query)
+    print(f"get_answer result type: {type(result)}, value: {result}")
+    return result
+
 @app.post("/ask")
 async def ask(question: Question):
-    embedding = OpenAIEmbeddings()
-    vectordb = FAISS.load_local("faiss_index", embedding, allow_dangerous_deserialization=True)
-
-    qa = RetrievalQA.from_chain_type(
-        llm=ChatOpenAI(model="gpt-4.1-nano", temperature=0.7),
-        retriever=vectordb.as_retriever()
-    )
-
-    result = qa.run(question.query)
+    result = get_answer(question.query)
     return {"answer": result}
