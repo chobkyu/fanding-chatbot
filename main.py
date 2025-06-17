@@ -7,6 +7,8 @@ from langchain.chains import RetrievalQA
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
+from langchain.chains.llm import LLMChain
+from langchain.chains import ConversationalRetrievalChain
 import os
 
 load_dotenv()
@@ -45,6 +47,58 @@ def get_answer(query: str) -> str:
     result = qa.run(query)
     print(f"get_answer result type: {type(result)}, value: {result}")
     return result
+
+
+# 1. standalone question 생성용 프롬프트
+condense_prompt = PromptTemplate(
+    input_variables=["chat_history", "question"],
+    template="""
+다음 대화 이력과 질문을 바탕으로 단일 질문으로 바꾸세요:
+대화 이력:
+{chat_history}
+질문:
+{question}
+"""
+)
+question_generator = LLMChain(
+    llm=ChatOpenAI(model="gpt-4.1-nano", temperature=0.7),
+    prompt=condense_prompt
+)
+
+# 2. 답변용 프롬프트
+qa_prompt = PromptTemplate(
+    input_variables=["context", "question"],
+    template="""
+You are a customer support chatbot.
+Based on the following information (Context), answer the user's question (Question) accurately and politely in Korean.
+
+Context:
+{context}
+
+Question:
+{question}
+
+Answer:
+"""
+)
+
+# 3. ConversationalRetrievalChain 생성
+chat_chain = ConversationalRetrievalChain.from_llm(
+    llm=ChatOpenAI(model="gpt-4.1-nano", temperature=0.7),
+    retriever=vectordb.as_retriever(),
+    condense_question_llm=question_generator.llm,
+    combine_docs_chain_kwargs={"prompt": qa_prompt},
+    return_source_documents=False
+)
+
+# 4. 대화 이력을 반영하는 함수
+def get_answer_with_history(query: str, history: list) -> str:
+    result = chat_chain.invoke({
+        "question": query,
+        "chat_history": history
+    })
+    return result["answer"]
+
 
 @app.post("/ask")
 async def ask(question: Question):

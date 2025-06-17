@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import gradio as gr
 from main import get_answer
+from main import get_answer_with_history
 from gradio.themes import Soft
 
 app = FastAPI()
