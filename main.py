@@ -48,6 +48,7 @@ def get_answer(query: str) -> str:
     print(f"get_answer result type: {type(result)}, value: {result}")
     return result
 
+##########################################################################
 
 # 1. standalone question 생성용 프롬프트
 condense_prompt = PromptTemplate(
