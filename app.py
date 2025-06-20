@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import gradio as gr
-from main import get_answer
+from main import get_answer, get_agent_answer
 from main import get_answer_with_history
 from gradio.themes import Soft
 
@@ -10,7 +10,7 @@ gradio_app = gr.Blocks(theme=Soft())
 def chat_fn(user_message, chat_history):
     if chat_history is None:
         chat_history = []
-    response = get_answer(user_message)
+    response = get_agent_answer(user_message)
     chat_history.append((user_message, response))
     return chat_history, chat_history
 

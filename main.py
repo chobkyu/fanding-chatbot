@@ -10,6 +10,10 @@ from langchain.prompts import PromptTemplate
 from langchain.chains.llm import LLMChain
 from langchain.chains import ConversationalRetrievalChain
 import os
+from langchain.agents import initialize_agent, AgentType
+from langchain.chat_models import ChatOpenAI
+from tools import search_tool
+from langchain.agents.agent_toolkits import create_retriever_tool
 
 load_dotenv()
 
@@ -99,6 +103,29 @@ def get_answer_with_history(query: str, history: list) -> str:
         "chat_history": history
     })
     return result["answer"]
+
+##################
+
+
+retriver_tool = create_retriever_tool(
+    retriever = vectordb.as_retriever(),
+    name="vector_search",
+    description="매뉴얼 문서 기반 질문에 답변할 때 사용합니다."
+)
+
+tools = [retriver_tool, search_tool]
+
+agent = initialize_agent(
+    tools=tools,
+    llm=ChatOpenAI(model="gpt-4.1-nano", temperature=0.7),
+    agent=AgentType.OPENAI_FUNCTIONS,
+    verbose=True
+)
+
+def get_agent_answer(query: str) -> str:
+    result = agent.run(query)
+    print(result)
+    return result
 
 
 @app.post("/ask")

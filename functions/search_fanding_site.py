@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 import random
 
-def search_fanding_site() -> str:
+def search_fanding_site(query: str) -> str:
     """
     팬딩 웹사이트에서 실시간 데이터를 크롤링합니다.
     """
@@ -54,7 +54,7 @@ def search_fanding_site() -> str:
         names = [c.text.strip() for c in creators]
 
         unique_texts = list(set(names))
-        data = random.sample(unique_texts, min(5,len(unique_texts)))
+        data = random.sample(unique_texts, min(15,len(unique_texts)))
 
         print(data)
         return f"현재 인기 있는 크리에이터는: {', '.join(data)}입니다."
