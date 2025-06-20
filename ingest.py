@@ -5,6 +5,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from dotenv import load_dotenv
 from pathlib import Path
+from bs4 import BeautifulSoup
 import os
 
 # .env 로드
@@ -93,6 +94,16 @@ URLS = [
 # 문서 로드
 loader = WebBaseLoader(URLS)
 docs = loader.load()
+
+# HTML 태그 제거 함수
+def strip_html_tags(documents):
+    for doc in documents:
+        soup = BeautifulSoup(doc.page_content, "html.parser")
+        clean_text = soup.get_text(separator=" ", strip=True)
+        doc.page_content = clean_text
+    return documents
+
+docs = strip_html_tags(docs)
 
 # 문서 나누기
 splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
