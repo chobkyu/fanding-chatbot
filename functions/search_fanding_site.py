@@ -27,16 +27,13 @@ def search_fanding_site(query: str) -> str:
         driver.get("https://fanding.kr/")
 
         # 명시적으로 특정 요소가 로드될 때까지 최대 10초 기다림
-        try:
-            WebDriverWait(driver, 15).until(
-                lambda d: any(
-                    e.text.strip() for e in d.find_elements(By.CLASS_NAME, "name__text__marquee")
-                )
+      
+        WebDriverWait(driver, 20).until(
+            lambda d: any(
+                e.text.strip() for e in d.find_elements(By.CLASS_NAME, "name__text__marquee")
             )
-        except TimeoutException:
-            print("❌ 요소 로딩 실패 - 타임아웃 발생")
-            driver.quit()
-            return "페이지 로딩 실패"
+        )
+                   
 
         # 페이지 소스 확인용 (문제 디버깅 시)
         # with open("page.html", "w", encoding="utf-8") as f:
@@ -51,7 +48,10 @@ def search_fanding_site(query: str) -> str:
         creators = soup.select(".name__text__marquee")
         print(creators)
 
-        names = [c.text.strip() for c in creators]
+        names = [c.text.strip() for c in creators if c.text.strip()]
+
+        if not names:
+            return "❌ 크리에이터 이름을 찾을 수 없습니다."
 
         unique_texts = list(set(names))
         data = random.sample(unique_texts, min(15,len(unique_texts)))
@@ -61,6 +61,10 @@ def search_fanding_site(query: str) -> str:
     except Exception as e:
         print(e)
         return f"실시간 검색에 실패했습니다: {str(e)}"
+    except TimeoutException:
+        print("❌ 요소 로딩 실패 - 타임아웃 발생")
+        driver.quit()
+        return "페이지 로딩 실패"
     finally:
         if driver:
             driver.quit()
