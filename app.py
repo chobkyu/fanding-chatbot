@@ -2,6 +2,8 @@ from fastapi import FastAPI
 import gradio as gr
 from main import get_answer, get_agent_answer
 from main import get_answer_with_history
+from langgraph_agent import get_agent_answer_graph
+from langgraph_agent_history import get_agent_answer_graph_history
 from gradio.themes import Soft
 
 app = FastAPI()
@@ -10,7 +12,7 @@ gradio_app = gr.Blocks(theme=Soft())
 def chat_fn(user_message, chat_history):
     if chat_history is None:
         chat_history = []
-    response = get_agent_answer(user_message)
+    response = get_agent_answer_graph_history(user_message)
     chat_history.append((user_message, response))
     return chat_history, chat_history
 
