@@ -42,11 +42,11 @@ def search_fanding_site(query: str) -> str:
         driver.implicitly_wait(5)
 
         html = driver.page_source
-        print(html)
+        # print(html)
         soup = BeautifulSoup(html, "html.parser")
 
         creators = soup.select(".name__text__marquee")
-        print(creators)
+        # print(creators)
 
         names = [c.text.strip() for c in creators if c.text.strip()]
 
